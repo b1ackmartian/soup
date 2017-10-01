@@ -40,6 +40,7 @@ defmodule Soup.CLI do
     process(:help)
   end
 
+  # PRIVATE
   #############################################################
 
   defp _parse_args({[help: true], _, _}), do: :help
