@@ -24,6 +24,7 @@ defmodule Soup.Soup do
     end
   end
 
+  # PRIVATE
   ###########################################################
 
   defp ask_user_to_select_location(locations) do
