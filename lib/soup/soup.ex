@@ -14,7 +14,19 @@ defmodule Soup.Soup do
     end
   end
 
-  def ask_user_to_select_location(locations) do
+  def fetch_soup_list() do
+    case get_saved_location() do
+      {:ok, location} ->
+        display_soup_list(location)
+      _ ->
+        IO.puts("It looks like yo haven't selected a default location. Select one now:")
+        enter_select_location_flow()
+    end
+  end
+
+  ###########################################################
+
+  defp ask_user_to_select_location(locations) do
     locations
     |> Enum.with_index(1)
     |> Enum.each(fn({location, index}) -> IO.puts " #{index} - #{location.name}" end)
@@ -38,7 +50,7 @@ defmodule Soup.Soup do
     end
   end
 
-  def display_soup_list(location) do
+  defp display_soup_list(location) do
     IO.puts("One moment while I fetch today's soup list for #{location.name}.")
     case Scraper.get_soups(location.id) do
       {:ok, soups} ->
@@ -48,7 +60,7 @@ defmodule Soup.Soup do
     end
   end
 
-  def get_saved_location() do
+  defp get_saved_location() do
     case Path.expand(@config_file) |> File.read() do
       {:ok, location} ->
         try do
@@ -64,16 +76,6 @@ defmodule Soup.Soup do
         end
 
       {:error, _} -> :error
-    end
-  end
-
-  def fetch_soup_list() do
-    case get_saved_location() do
-      {:ok, location} ->
-        display_soup_list(location)
-      _ ->
-        IO.puts("It looks like yo haven't selected a default location. Select one now:")
-        enter_select_location_flow()
     end
   end
 end

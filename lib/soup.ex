@@ -1,18 +1,7 @@
 defmodule Soup do
-  @moduledoc """
-  Documentation for Soup.
-  """
 
-  @doc """
-  Hello world.
+  alias Soup.Soup
 
-  ## Examples
-
-      iex> Soup.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  defdelegate enter_select_location_flow(), to: Soup
+  defdelegate fetch_soup_list(), to: Soup
 end
