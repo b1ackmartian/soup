@@ -5,50 +5,61 @@ defmodule Soup.Soup do
 
   def enter_select_location_flow() do
     IO.puts("One moment while I fetch the link of locations...")
-    case Scraper.get_locations() do
-      {:ok, locations} ->
-        {:ok, location } = ask_user_to_select_location(locations)
-        display_soup_list(location)
-      :error ->
-        IO.puts("An unexpected error occurred. Please try again.")
-    end
+
+    Scraper.get_locations()
+    |> ask_user_to_select_location()
   end
 
   def fetch_soup_list() do
-    case get_saved_location() do
-      {:ok, location} ->
-        display_soup_list(location)
-      _ ->
-        IO.puts("It looks like yo haven't selected a default location. Select one now:")
-        enter_select_location_flow()
-    end
+    get_saved_location()
+    |> use_saved_location()
   end
 
   # PRIVATE
   ###########################################################
 
-  defp ask_user_to_select_location(locations) do
+  defp ask_user_to_select_location({:ok, locations}) do
+    {:ok, location } = _ask_user_to_select_location(locations)
+    display_soup_list(location)
+  end
+  defp ask_user_to_select_location(:error), do: IO.puts("An unexpected error occurred. Please try again.")
+
+  defp _ask_user_to_select_location(locations) do
     locations
     |> Enum.with_index(1)
     |> Enum.each(fn({location, index}) -> IO.puts " #{index} - #{location.name}" end)
 
-    case IO.gets("Select a location number: ") |> Integer.parse() do
-      :error ->
-        IO.puts("Invalid selection. Try again.")
-        ask_user_to_select_location(locations)
+    IO.gets("Select a location number: ")
+    |> Integer.parse()
+    |> handle_location_selection(locations)
+  end
 
-      {location_nb, _} ->
-        case Enum.at(locations, location_nb - 1) do
-          nil ->
-            IO.puts("Invalid location number. Try again.")
-            ask_user_to_select_location(locations)
+  defp handle_location_selection(:error, locations) do
+    IO.puts("Invalid selection. Try again.")
+    _ask_user_to_select_location(locations)
+  end
 
-          location ->
-            IO.puts("You've selected the #{location.name} location.")
-            File.write!(Path.expand(@config_file), to_string(:erlang.term_to_binary(location)))
-            {:ok, location}
-        end
-    end
+  defp handle_location_selection({location_nb, _}, locations) do
+    Enum.at(locations, location_nb - 1)
+    |> _handle_location_selection(locations)
+  end
+
+  defp _handle_location_selection(nil, locations) do
+    IO.puts("Invalid location number. Try again.")
+    _ask_user_to_select_location(locations)
+  end
+
+  defp _handle_location_selection(location, _locations) do
+    IO.puts("You've selected the #{location.name} location.")
+    File.write!(Path.expand(@config_file), to_string(:erlang.term_to_binary(location)))
+    {:ok, location}
+  end
+
+  defp use_saved_location({:ok, location}), do: display_soup_list(location)
+
+  defp use_saved_location(_) do
+    IO.puts("It looks like yo haven't selected a default location. Select one now:")
+    enter_select_location_flow()
   end
 
   defp display_soup_list(location) do
