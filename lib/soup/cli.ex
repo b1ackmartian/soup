@@ -11,13 +11,26 @@ defmodule Soup.CLI do
     |> process()
   end
 
-  def parse_args(argv) do
+  # PRIVATE
+  #############################################################
+
+  defp parse_args(argv) do
     argv
     |>  OptionParser.parse(@options)
     |> _parse_args()
   end
 
-  def process(:help) do
+  defp _parse_args({[help: true], _, _}), do: :help
+
+  defp _parse_args({[],[],[{"-h", nil}]}), do: :help
+
+  defp _parse_args({[locations: true], _, _}), do: :list_locations
+
+  defp _parse_args({[], [], []}), do: :list_soups
+
+  defp _parse_args(_), do: :invalid_arg
+
+  defp process(:help) do
     IO.puts """
 
     soup --locations # Select a default locationi whose soups you want to list
@@ -27,25 +40,12 @@ defmodule Soup.CLI do
     System.halt(0)
   end
 
-  def process(:list_locations) do
-    Soup.enter_select_location_flow()
-  end
+  defp process(:list_locations), do: Soup.enter_select_location_flow()
 
-  def process(:list_soups) do
-    Soup.fetch_soup_list()
-  end
+  defp process(:list_soups), do: Soup.fetch_soup_list()
 
-  def process(:invalid_arg) do
+  defp process(:invalid_arg) do
     IO.puts "Invalid argument(s) passed. See usage below:"
     process(:help)
   end
-
-  # PRIVATE
-  #############################################################
-
-  defp _parse_args({[help: true], _, _}), do: :help
-  defp _parse_args({[],[],[{"-h", nil}]}), do: :help
-  defp _parse_args({[locations: true], _, _}), do: :list_locations
-  defp _parse_args({[], [], []}), do: :list_soups
-  defp _parse_args(_), do: :invalid_arg
 end

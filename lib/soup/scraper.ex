@@ -15,16 +15,6 @@ defmodule Soup.Scraper do
   # PRIVATE
   ################################################################
 
-  defp extract_location_name_and_id({_tag, attrs, children}) do
-    {_, _, [name]} =
-      Floki.raw_html(children)
-      |> Floki.find(".location-card__name")
-      |> hd()
-
-    attrs = Enum.into(attrs, %{})
-    %{id: attrs["id"], name: name}
-  end
-
   defp handle_locations_response({:ok, response}), do: _handle_locations_response(response)
   defp handle_locations_response(_), do: :error
 
@@ -38,6 +28,16 @@ defmodule Soup.Scraper do
     {:ok, locations}
   end
   defp _handle_locations_response(_), do: :error
+
+  defp extract_location_name_and_id({_tag, attrs, children}) do
+    {_, _, [name]} =
+      Floki.raw_html(children)
+      |> Floki.find(".location-card__name")
+      |> hd()
+
+    attrs = Enum.into(attrs, %{})
+    %{id: attrs["id"], name: name}
+  end
 
   defp handle_soups_response({:ok, response}), do: _handle_soups_response(response)
   defp handle_soups_response(_), do: :error
